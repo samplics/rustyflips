@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RustyPot - The best 1v1 Rust coinflip site!</title>
+  <script src="https://kit.fontawesome.com/1d48fe622e.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+
+<body>
+  <nav class="nav navbar">
+    <a href="/"><img class="nav-logo" src="img/logo.png" /></a>
+    {{#if user}}
+      <li class="nav-user">
+        <img src="{{user.photos.[2].value}}" />
+        <a href="javascript:void(0)" title="{{user.displayName}}" class="nav-name shadow-none btn" id="accDrop" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <h2>{{nav_name}}</h2> <i class="fas fa-sort-down"></i>
+        </a>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accDrop">
+          <a class="dropdown-item" href="/"><i class="fas fa-house-user"></i> Home</a>
+          <a class="dropdown-item" href="/account"><i class="fas fa-user-circle"></i> Account</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </li>
+    {{else}}
+      <a class="steam-signin" href="/auth/steam"><i class="fab fa-steam"></i> Sign in</a>
+    {{/if}}
+  </nav>
+
+  {{#if user}}
+    <div id="account">
+      <div class="account-data">
+        <div class="account-header">
+          <h1>{{user.displayName}}'s Statistics</h1>
+        </div>
+        <div class="account-body">
+          <div class="profile-data">
+            <img src="{{user.photos.[2].value}}" class="account-pic" />
+            <div class="profile-info">
+              <div class="data-item">
+                <h2>Total Flipped: </h2>
+                <h1>{{total_flipped}}</h1>
+              </div>
+              <div class="data-item">
+                <h2>Total Won: </h2>
+                <h1>{{total_won}}</h1>
+              </div>
+              <div class="data-item">
+                <h2>Total Profit: </h2>
+                <h1>${{total_profit}}</h1>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="coinflip-data">
+        <div class="coinflip-header">
+          <h1>FLIP HISTORY</h1>
+        </div>
+        <div class="coinflip-body">
+          <table id="flips">
+            <tr>
+              <th>Round</th>
+              <th>Amount</th>
+              <th>Player</th>
+              <th>Result</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+            </tr>
+
+          </table>
+        </div>
+      </div>
+      <div class="account-data" style="margin-top:30px;">
+        <div class="account-header">
+          <h1>Options</h1> <a target="_blank" class="header-link" href="https://steamcommunity.com/profiles/{{user.id}}/tradeoffers/privacy#trade_offer_access_url">
+            <h2>Click here for trade url</h2>
+          </a>
+        </div>
+        <div class="account-body">
+          <h3>Set Trade link</h3>
+          <p>Please ensure your trade URL is valid and belongs to you. We take no responsibility if you happen to enter the wrong url.</p>
+          <form action="/settings/tradelink" class="tl-form" method="post">
+            {{#if tradelink}}
+              <input type="text" id="tradelink" name="tradelink" placeholder="{{tradelink}}" required />
+            {{else}}
+              <input type="text" id="tradelink" name="tradelink" placeholder="No tradelink currently set" required />
+            {{/if}}
+            <input id="tl-submit" class="shadow-none" type="submit" title="Save your new tradelink" value="Save" />
+          </form>
+          <hr style="background-color:#97e198; height:2px;" />
+          <h3>Set Client Seed</h3>
+          <p>You can make this seed whatever you want. This seed is used to generate fair results for all coinflips you create.</p>
+          <form action="/settings/clientseed" class="tl-form" method="post">
+            <input type="text" id="clientseed" name="clientseed" placeholder="{{clientseed}}" required />
+            <button type="button" data-toggle="popover" title="Generate a new random seed" id="tl-generate" class="shadow-none randomize" onclick="ramdomize()">Randomize</button>
+            <input id="seed-submit" class="shadow-none" title="Save your new seed" type="submit" value="Save" />
+          </form>
+        </div>
+      </div>
+    </div>
+  {{else}}
+    <div class="account-data">
+      <h1 class="not-logged-in-text">You must <a href="/auth/steam">Login</a> to view your account information.</h1>
+    </div>
+  {{/if}}
+  <script type="text/javascript">
+    function ramdomize() {
+      const availableChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let randomString = '';
+      for (let i = 0; i < 20; i++) {
+        randomString += availableChars[Math.floor(Math.random() * availableChars.length)];
+      }
+      document.getElementById("clientseed").value = randomString
+      $('#seed-submit').click()
+    }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/rexeze/formatTimeStamp/src/index-cdn.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+</body>
+
+</html>
